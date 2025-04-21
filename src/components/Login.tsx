@@ -1,6 +1,10 @@
 import React, { useState } from 'react';
 
-const Login: React.FC = () => {
+interface LoginProps {
+  onSwitchToRegister: () => void;
+}
+
+const Login: React.FC<LoginProps> = ({ onSwitchToRegister }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [rememberMe, setRememberMe] = useState(false);
@@ -100,7 +104,7 @@ const Login: React.FC = () => {
         </div>
 
         <p className="mt-8 text-center text-gray-600">
-          Not a member? <a href="#" className="text-orange-500 hover:underline">Create a new account</a>
+          Not a member? <a href="#" onClick={(e) => { e.preventDefault(); onSwitchToRegister(); }} className="text-orange-500 hover:underline">Create a new account</a>
         </p>
       </div>
     </div>
