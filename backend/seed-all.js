@@ -3,9 +3,15 @@ const fs = require('fs');
 const path = require('path');
 const dotenv = require("dotenv");
 
-// Import models
+// Import all models
 const User = require("./models/User");
 const Category = require("./models/Category");
+const Admin = require("./models/Admin");
+const Application = require("./models/Application");
+const Message = require("./models/Message");
+const Order = require("./models/Order");
+const Payment = require("./models/Payment");
+const Product = require("./models/Product");
 
 // Load environment variables
 dotenv.config();
@@ -132,6 +138,61 @@ const seedCategories = async () => {
   }
 };
 
+// Seed sample products (optional)
+const seedProducts = async () => {
+  try {
+    // Check if we already have products
+    const productsCount = await Product.countDocuments();
+    if (productsCount > 0) {
+      console.log(`${productsCount} products already exist, skipping product seeding`);
+      return true;
+    }
+    
+    // Get categories to reference in products
+    const categories = await Category.find();
+    if (categories.length === 0) {
+      console.log("No categories found, cannot seed products");
+      return false;
+    }
+    
+    // Sample products data
+    const sampleProducts = [
+      {
+        name: "Sample Laptop",
+        description: "A high-performance laptop for professionals",
+        price: 85000,
+        category: categories.find(c => c.name === "Electronics")?._id || categories[0]._id,
+        inStock: true,
+        quantity: 10
+      },
+      {
+        name: "Office Chair",
+        description: "Ergonomic office chair with lumbar support",
+        price: 12000,
+        category: categories.find(c => c.name === "Furniture")?._id || categories[0]._id,
+        inStock: true,
+        quantity: 15
+      },
+      {
+        name: "Cotton T-Shirt",
+        description: "Comfortable cotton t-shirt for daily wear",
+        price: 800,
+        category: categories.find(c => c.name === "Clothing")?._id || categories[0]._id,
+        inStock: true,
+        quantity: 50
+      }
+    ];
+    
+    // Insert sample products
+    const createdProducts = await Product.insertMany(sampleProducts);
+    console.log(`${createdProducts.length} sample products created successfully`);
+    return true;
+  } catch (error) {
+    console.error("Error seeding products:", error);
+    return false;
+  }
+};
+
 // Seed provinces and districts data
 const seedLocationData = () => {
   try {
@@ -245,6 +306,7 @@ const seedAll = async () => {
     // Seed MongoDB collections
     const adminSuccess = await seedAdmin();
     const categoriesSuccess = await seedCategories();
+    const productsSuccess = await seedProducts();
     
     // Check if all seeding operations were successful
     if (locationSuccess && bankDetailsSuccess && adminSuccess && categoriesSuccess) {
