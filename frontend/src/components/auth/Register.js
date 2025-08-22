@@ -76,80 +76,90 @@ const Register = () => {
   };
 
   return (
-    <div className="row justify-content-center">
-      <div className="col-md-6">
-        <Card>
-          <Card.Body>
-            <h2 className="text-center mb-4">Register {role && `as ${role === "vendor" ? "Vendor" : "Center"}`}</h2>
-            
-            {error && <Alert variant="danger">{error}</Alert>}
-            {successMessage && <Alert variant="success">{successMessage}</Alert>}
-            
-            <Form onSubmit={onSubmit}>
-              <Form.Group className="mb-3">
-                <Form.Label>Email Address</Form.Label>
-                <Form.Control
-                  type="email"
-                  name="email"
-                  value={email}
-                  onChange={onChange}
-                  required
+    <div className="container mt-5">
+      <div className="row justify-content-center">
+        <div className="col-md-6">
+          <Card>
+            <Card.Body>
+              {/* Add Logo */}
+              <div className="text-center mb-4">
+                <img 
+                  src="/assets/images/vrs-logo.png" 
+                  alt="VRS Logo" 
+                  style={{ width: '150px', height: 'auto' }} 
                 />
-              </Form.Group>
-
-              <Form.Group className="mb-3">
-                <Form.Label>Password</Form.Label>
-                <Form.Control
-                  type="password"
-                  name="password"
-                  value={password}
-                  onChange={onChange}
-                  required
-                />
-              </Form.Group>
-
-              <Form.Group className="mb-3">
-                <Form.Label>Confirm Password</Form.Label>
-                <Form.Control
-                  type="password"
-                  name="confirmPassword"
-                  value={confirmPassword}
-                  onChange={onChange}
-                  required
-                />
-              </Form.Group>
-
-              <Form.Group className="mb-3">
-                <Form.Label>Register as</Form.Label>
-                <Form.Select
-                  name="role"
-                  value={role}
-                  onChange={onChange}
-                  required
-                >
-                  <option value="">Select role</option>
-                  <option value="vendor">Vendor</option>
-                  <option value="center">Center</option>
-                </Form.Select>
-                {role && (
-                  <Form.Text className="text-muted">
-                    {getRoleDescription(role)}
-                  </Form.Text>
-                )}
-              </Form.Group>
-
-              <Button variant="primary" type="submit" className="w-100 mt-3">
-                Register
-              </Button>
-            </Form>
-
-            <div className="text-center mt-3">
-              <p>
-                Already have an account? <a href="/login">Login</a>
-              </p>
-            </div>
-          </Card.Body>
-        </Card>
+              </div>
+              <h2 className="text-center mb-4">Register</h2>
+              
+              {error && <Alert variant="danger">{error}</Alert>}
+              {successMessage && <Alert variant="success">{successMessage}</Alert>}
+              
+              <Form onSubmit={onSubmit}>
+                <Form.Group className="mb-3">
+                  <Form.Label>Email Address</Form.Label>
+                  <Form.Control
+                    type="email"
+                    name="email"
+                    value={email}
+                    onChange={onChange}
+                    required
+                  />
+                </Form.Group>
+    
+                <Form.Group className="mb-3">
+                  <Form.Label>Password</Form.Label>
+                  <Form.Control
+                    type="password"
+                    name="password"
+                    value={password}
+                    onChange={onChange}
+                    required
+                  />
+                </Form.Group>
+    
+                <Form.Group className="mb-3">
+                  <Form.Label>Confirm Password</Form.Label>
+                  <Form.Control
+                    type="password"
+                    name="confirmPassword"
+                    value={confirmPassword}
+                    onChange={onChange}
+                    required
+                  />
+                </Form.Group>
+    
+                <Form.Group className="mb-3">
+                  <Form.Label>Register as</Form.Label>
+                  <Form.Select
+                    name="role"
+                    value={role}
+                    onChange={onChange}
+                    required
+                  >
+                    <option value="">Select role</option>
+                    <option value="vendor">Vendor</option>
+                    <option value="center">Center</option>
+                  </Form.Select>
+                  {role && (
+                    <Form.Text className="text-muted">
+                      {getRoleDescription(role)}
+                    </Form.Text>
+                  )}
+                </Form.Group>
+    
+                <Button variant="primary" type="submit" className="w-100 mt-3">
+                  Register
+                </Button>
+              </Form>
+    
+              <div className="text-center mt-3">
+                <p>
+                  Already have an account? <a href="/login">Login</a>
+                </p>
+              </div>
+            </Card.Body>
+          </Card>
+        </div>
       </div>
 
       {/* Role Selection Modal */}

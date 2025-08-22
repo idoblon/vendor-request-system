@@ -47,6 +47,14 @@ const Login = () => {
       <div className="col-md-6">
         <div className="card">
           <div className="card-body">
+            {/* Add Logo */}
+            <div className="text-center mb-4">
+              <img 
+                src="/assets/images/vrs-logo.png" 
+                alt="VRS Logo" 
+                style={{ width: '150px', height: 'auto' }} 
+              />
+            </div>
             <h2 className="text-center mb-4">Login</h2>
 
             {error && <Alert variant="danger">{error}</Alert>}

@@ -883,7 +883,14 @@ const AdminDashboard = () => {
         {/* Main Content */}
         <Col md={9} lg={10} className="p-4">
           <div className="d-flex justify-content-between align-items-center mb-4">
-            <h2>{activeTab.charAt(0).toUpperCase() + activeTab.slice(1)}</h2>
+            <div className="d-flex align-items-center">
+              <img 
+                src="/assets/images/vrs-logo.png" 
+                alt="VRS Logo" 
+                style={{ width: '50px', height: 'auto', marginRight: '10px' }} 
+              />
+              <h3 className="mb-0">Admin Dashboard</h3>
+            </div>
             <div className="d-flex align-items-center">
               <Dropdown className="me-3">
                 <Dropdown.Toggle variant="light" id="notification-dropdown">
