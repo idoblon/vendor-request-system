@@ -1,0 +1,23 @@
+[
+  {
+    "id": "1",
+    "bankName": "Nepal Bank Limited",
+    "branch": "",
+    "accountNumber": "0123456789",
+    "accountHolderName": "Example Account"
+  },
+  {
+    "id": "2",
+    "bankName": "Rastriya Banijya Bank",
+    "branch": "",
+    "accountNumber": "9876543210",
+    "accountHolderName": "Sample Account"
+  },
+  {
+    "id": "3",
+    "bankName": "NIC Asia Bank",
+    "branch": "",
+    "accountNumber": "5678901234",
+    "accountHolderName": "Test Account"
+  }
+]
