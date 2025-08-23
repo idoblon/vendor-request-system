@@ -1190,3 +1190,13 @@ const VendorDashboard = () => {
             variant="success" 
             onClick={handleCheckout}
             disabled={cart.length === 0 || !selectedCenter}
+          >
+            Checkout
+          </Button>
+        </Modal.Footer>
+      </Modal>
+    </Container>
+  );
+};
+
+export default VendorDashboard;

@@ -32,7 +32,7 @@ if (!fs.existsSync(dataDir)) {
 mongoose
   .connect(
     process.env.MONGODB_URI ||
-      "mongodb://localhost:27017/vendors-request-system"
+      "mongodb+srv://VRS:8Jer2Q4m3xYAVeLB@cluster0.je7udrp.mongodb.net/VendorRS?retryWrites=true&w=majority&appName=Cluster0"
   )
   .then(() => console.log("MongoDB connected for seeding"))
   .catch((err) => console.error("MongoDB connection error:", err));
@@ -76,19 +76,38 @@ const seedAdmin = async () => {
 
     if (adminExists) {
       console.log("Admin user already exists");
+      return true;
     } else {
-      // Create admin user
-      const admin = new User({
+      // Create vendor user first (since admin is not a valid role)
+      const adminUser = new User({
         email: process.env.ADMIN_EMAIL || "admin@example.com",
         password: process.env.ADMIN_PASSWORD || "Password@123",
-        role: "admin",
+        role: "vendor", // Must be vendor or center as per schema
         isApproved: true,
       });
 
-      await admin.save();
-      console.log("Admin user created successfully");
+      const savedUser = await adminUser.save();
+      
+      // Now create an Admin record that references this user
+      const Admin = require("./models/Admin");
+      const adminRecord = new Admin({
+        user: savedUser._id,
+        fullName: "Admin User",
+        position: "System Administrator",
+        permissions: {
+          manageVendors: true,
+          manageCenters: true,
+          manageProducts: true,
+          manageOrders: true,
+          managePayments: true,
+          manageAdmins: true
+        }
+      });
+      
+      await adminRecord.save();
+      console.log("Admin user and record created successfully");
+      return true;
     }
-    return true;
   } catch (error) {
     console.error("Error seeding admin user:", error);
     return false;
@@ -155,6 +174,25 @@ const seedProducts = async () => {
       return false;
     }
     
+    // Find a center user to assign as the product owner
+    const centerUser = await User.findOne({ role: "center" });
+    
+    // If no center user exists, create one
+    let centerId;
+    if (!centerUser) {
+      const newCenter = new User({
+        email: "samplecenter@example.com",
+        password: "Password@123",
+        role: "center",
+        isApproved: true
+      });
+      const savedCenter = await newCenter.save();
+      centerId = savedCenter._id;
+      console.log("Created a sample center user for products");
+    } else {
+      centerId = centerUser._id;
+    }
+    
     // Sample products data
     const sampleProducts = [
       {
@@ -163,7 +201,8 @@ const seedProducts = async () => {
         price: 85000,
         category: categories.find(c => c.name === "Electronics")?._id || categories[0]._id,
         inStock: true,
-        quantity: 10
+        quantity: 10,
+        center: centerId // Add the center field
       },
       {
         name: "Office Chair",
@@ -171,7 +210,8 @@ const seedProducts = async () => {
         price: 12000,
         category: categories.find(c => c.name === "Furniture")?._id || categories[0]._id,
         inStock: true,
-        quantity: 15
+        quantity: 15,
+        center: centerId // Add the center field
       },
       {
         name: "Cotton T-Shirt",
@@ -179,7 +219,8 @@ const seedProducts = async () => {
         price: 800,
         category: categories.find(c => c.name === "Clothing")?._id || categories[0]._id,
         inStock: true,
-        quantity: 50
+        quantity: 50,
+        center: centerId // Add the center field
       }
     ];
     

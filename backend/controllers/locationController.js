@@ -1,10 +1,65 @@
-const Province = require("../models/Province");
-const District = require("../models/District");
+const fs = require("fs");
+const path = require("path");
+
+const provincesFilePath = path.join(__dirname, "../data/provinces.json");
+const districtsFilePath = path.join(__dirname, "../data/districts.json");
+
+// Helper function to read provinces from JSON file
+const readProvinces = () => {
+  try {
+    const data = fs.readFileSync(provincesFilePath, "utf8");
+    return JSON.parse(data);
+  } catch (err) {
+    console.error("Error reading provinces file:", err);
+    return [];
+  }
+};
+
+// Helper function to read districts from JSON file
+const readDistricts = () => {
+  try {
+    const data = fs.readFileSync(districtsFilePath, "utf8");
+    return JSON.parse(data);
+  } catch (err) {
+    console.error("Error reading districts file:", err);
+    return [];
+  }
+};
+
+// Helper function to write provinces to JSON file
+const writeProvinces = (provinces) => {
+  try {
+    fs.writeFileSync(
+      provincesFilePath,
+      JSON.stringify(provinces, null, 2),
+      "utf8"
+    );
+    return true;
+  } catch (err) {
+    console.error("Error writing provinces file:", err);
+    return false;
+  }
+};
+
+// Helper function to write districts to JSON file
+const writeDistricts = (districts) => {
+  try {
+    fs.writeFileSync(
+      districtsFilePath,
+      JSON.stringify(districts, null, 2),
+      "utf8"
+    );
+    return true;
+  } catch (err) {
+    console.error("Error writing districts file:", err);
+    return false;
+  }
+};
 
 // Get all provinces
-exports.getAllProvinces = async (req, res) => {
+exports.getAllProvinces = (req, res) => {
   try {
-    const provinces = await Province.find();
+    const provinces = readProvinces();
     res.json(provinces);
   } catch (err) {
     console.error(err.message);
@@ -13,10 +68,21 @@ exports.getAllProvinces = async (req, res) => {
 };
 
 // Get all districts
-exports.getAllDistricts = async (req, res) => {
+exports.getAllDistricts = (req, res) => {
   try {
-    const districts = await District.find().populate("province", "name");
-    res.json(districts);
+    const districts = readDistricts();
+    const provinces = readProvinces();
+
+    // Add province name to each district
+    const districtsWithProvinces = districts.map((district) => {
+      const province = provinces.find((p) => p.id === district.provinceId);
+      return {
+        ...district,
+        province: province ? { name: province.name } : null,
+      };
+    });
+
+    res.json(districtsWithProvinces);
   } catch (err) {
     console.error(err.message);
     res.status(500).send("Server error");
@@ -24,10 +90,17 @@ exports.getAllDistricts = async (req, res) => {
 };
 
 // Get districts by province
-exports.getDistrictsByProvince = async (req, res) => {
+exports.getDistrictsByProvince = (req, res) => {
   try {
-    const districts = await District.find({ province: req.params.provinceId });
-    res.json(districts);
+    const provinceId = req.params.provinceId;
+    const districts = readDistricts();
+
+    // Filter districts by province ID
+    const filteredDistricts = districts.filter(
+      (district) => district.provinceId === provinceId
+    );
+
+    res.json(filteredDistricts);
   } catch (err) {
     console.error(err.message);
     res.status(500).send("Server error");
@@ -35,20 +108,30 @@ exports.getDistrictsByProvince = async (req, res) => {
 };
 
 // Add a new province
-exports.addProvince = async (req, res) => {
+exports.addProvince = (req, res) => {
   try {
     const { name } = req.body;
+    const provinces = readProvinces();
 
     // Check if province already exists
-    let province = await Province.findOne({ name });
-    if (province) {
+    if (provinces.some((p) => p.name === name)) {
       return res.status(400).json({ msg: "Province already exists" });
     }
 
-    province = new Province({ name });
-    await province.save();
+    // Generate a new ID
+    const newId =
+      provinces.length > 0
+        ? (Math.max(...provinces.map((p) => parseInt(p.id))) + 1).toString()
+        : "1";
 
-    res.json(province);
+    const newProvince = { id: newId, name };
+    provinces.push(newProvince);
+
+    if (writeProvinces(provinces)) {
+      res.json(newProvince);
+    } else {
+      res.status(500).send("Error saving province");
+    }
   } catch (err) {
     console.error(err.message);
     res.status(500).send("Server error");
@@ -56,30 +139,38 @@ exports.addProvince = async (req, res) => {
 };
 
 // Add a new district
-exports.addDistrict = async (req, res) => {
+exports.addDistrict = (req, res) => {
   try {
     const { name, provinceId } = req.body;
+    const provinces = readProvinces();
+    const districts = readDistricts();
 
     // Check if province exists
-    const province = await Province.findById(provinceId);
-    if (!province) {
+    if (!provinces.some((p) => p.id === provinceId)) {
       return res.status(404).json({ msg: "Province not found" });
     }
 
     // Check if district already exists in this province
-    let district = await District.findOne({ name, province: provinceId });
-    if (district) {
-      return res.status(400).json({ msg: "District already exists in this province" });
+    if (districts.some((d) => d.name === name && d.provinceId === provinceId)) {
+      return res
+        .status(400)
+        .json({ msg: "District already exists in this province" });
     }
 
-    district = new District({
-      name,
-      province: provinceId
-    });
+    // Generate a new ID
+    const newId =
+      districts.length > 0
+        ? (Math.max(...districts.map((d) => parseInt(d.id))) + 1).toString()
+        : "1";
 
-    await district.save();
+    const newDistrict = { id: newId, name, provinceId };
+    districts.push(newDistrict);
 
-    res.json(district);
+    if (writeDistricts(districts)) {
+      res.json(newDistrict);
+    } else {
+      res.status(500).send("Error saving district");
+    }
   } catch (err) {
     console.error(err.message);
     res.status(500).send("Server error");
@@ -87,55 +178,142 @@ exports.addDistrict = async (req, res) => {
 };
 
 // Seed provinces and districts data
-exports.seedLocationData = async (req, res) => {
+exports.seedLocationData = (req, res) => {
   try {
     // Nepal provinces and districts data
     const provincesData = [
-      'Province 1',
-      'Madhesh Province',
-      'Bagmati Province',
-      'Gandaki Province',
-      'Lumbini Province',
-      'Karnali Province',
-      'Sudurpashchim Province'
+      "Province 1",
+      "Madhesh Province",
+      "Bagmati Province",
+      "Gandaki Province",
+      "Lumbini Province",
+      "Karnali Province",
+      "Sudurpashchim Province",
     ];
 
     const districtsData = {
-      'Province 1': ['Bhojpur', 'Dhankuta', 'Ilam', 'Jhapa', 'Khotang', 'Morang', 'Okhaldhunga', 'Panchthar', 'Sankhuwasabha', 'Solukhumbu', 'Sunsari', 'Taplejung', 'Terhathum', 'Udayapur'],
-      'Madhesh Province': ['Bara', 'Dhanusha', 'Mahottari', 'Parsa', 'Rautahat', 'Saptari', 'Sarlahi', 'Siraha'],
-      'Bagmati Province': ['Bhaktapur', 'Chitwan', 'Dhading', 'Dolakha', 'Kathmandu', 'Kavrepalanchok', 'Lalitpur', 'Makwanpur', 'Nuwakot', 'Ramechhap', 'Rasuwa', 'Sindhuli', 'Sindhupalchok'],
-      'Gandaki Province': ['Baglung', 'Gorkha', 'Kaski', 'Lamjung', 'Manang', 'Mustang', 'Myagdi', 'Nawalparasi East', 'Parbat', 'Syangja', 'Tanahun'],
-      'Lumbini Province': ['Arghakhanchi', 'Banke', 'Bardiya', 'Dang', 'Gulmi', 'Kapilvastu', 'Nawalparasi West', 'Palpa', 'Pyuthan', 'Rolpa', 'Rukum East', 'Rupandehi'],
-      'Karnali Province': ['Dailekh', 'Dolpa', 'Humla', 'Jajarkot', 'Jumla', 'Kalikot', 'Mugu', 'Rukum West', 'Salyan', 'Surkhet'],
-      'Sudurpashchim Province': ['Achham', 'Baitadi', 'Bajhang', 'Bajura', 'Dadeldhura', 'Darchula', 'Doti', 'Kailali', 'Kanchanpur']
+      "Province 1": [
+        "Bhojpur",
+        "Dhankuta",
+        "Ilam",
+        "Jhapa",
+        "Khotang",
+        "Morang",
+        "Okhaldhunga",
+        "Panchthar",
+        "Sankhuwasabha",
+        "Solukhumbu",
+        "Sunsari",
+        "Taplejung",
+        "Terhathum",
+        "Udayapur",
+      ],
+      "Madhesh Province": [
+        "Bara",
+        "Dhanusha",
+        "Mahottari",
+        "Parsa",
+        "Rautahat",
+        "Saptari",
+        "Sarlahi",
+        "Siraha",
+      ],
+      "Bagmati Province": [
+        "Bhaktapur",
+        "Chitwan",
+        "Dhading",
+        "Dolakha",
+        "Kathmandu",
+        "Kavrepalanchok",
+        "Lalitpur",
+        "Makwanpur",
+        "Nuwakot",
+        "Ramechhap",
+        "Rasuwa",
+        "Sindhuli",
+        "Sindhupalchok",
+      ],
+      "Gandaki Province": [
+        "Baglung",
+        "Gorkha",
+        "Kaski",
+        "Lamjung",
+        "Manang",
+        "Mustang",
+        "Myagdi",
+        "Nawalparasi East",
+        "Parbat",
+        "Syangja",
+        "Tanahun",
+      ],
+      "Lumbini Province": [
+        "Arghakhanchi",
+        "Banke",
+        "Bardiya",
+        "Dang",
+        "Gulmi",
+        "Kapilvastu",
+        "Nawalparasi West",
+        "Palpa",
+        "Pyuthan",
+        "Rolpa",
+        "Rukum East",
+        "Rupandehi",
+      ],
+      "Karnali Province": [
+        "Dailekh",
+        "Dolpa",
+        "Humla",
+        "Jajarkot",
+        "Jumla",
+        "Kalikot",
+        "Mugu",
+        "Rukum West",
+        "Salyan",
+        "Surkhet",
+      ],
+      "Sudurpashchim Province": [
+        "Achham",
+        "Baitadi",
+        "Bajhang",
+        "Bajura",
+        "Dadeldhura",
+        "Darchula",
+        "Doti",
+        "Kailali",
+        "Kanchanpur",
+      ],
     };
 
-    // Clear existing data
-    await Province.deleteMany({});
-    await District.deleteMany({});
+    // Create provinces array with IDs
+    const provinces = provincesData.map((name, index) => ({
+      id: (index + 1).toString(),
+      name,
+    }));
 
-    // Insert provinces and get their IDs
-    const provinceMap = {};
-    for (const provinceName of provincesData) {
-      const province = new Province({ name: provinceName });
-      await province.save();
-      provinceMap[provinceName] = province._id;
-    }
+    // Create districts array with province references
+    let districtId = 1;
+    const districts = [];
 
-    // Insert districts with province references
-    for (const [provinceName, districts] of Object.entries(districtsData)) {
-      const provinceId = provinceMap[provinceName];
-      
-      for (const districtName of districts) {
-        const district = new District({
+    for (const [provinceName, districtNames] of Object.entries(districtsData)) {
+      const provinceId = (provincesData.indexOf(provinceName) + 1).toString();
+
+      for (const districtName of districtNames) {
+        districts.push({
+          id: districtId.toString(),
           name: districtName,
-          province: provinceId
+          provinceId,
         });
-        await district.save();
+        districtId++;
       }
     }
 
-    res.json({ message: "Location data seeded successfully" });
+    // Write data to files
+    if (writeProvinces(provinces) && writeDistricts(districts)) {
+      res.json({ message: "Location data seeded successfully" });
+    } else {
+      res.status(500).send("Error seeding location data");
+    }
   } catch (err) {
     console.error(err.message);
     res.status(500).send("Server error");

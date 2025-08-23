@@ -1,10 +1,6 @@
-<div className="mb-3">
-  <label htmlFor="branch" className="form-label">Branch *</label>
-  <Field
-    type="text"
-    name="branch"
-    className="form-control"
-    placeholder="Enter branch name"
-  />
-  <ErrorMessage name="branch" component="div" className="text-danger" />
-</div>
+<div className="section-header">
+  <i>
+    <FaBuilding size={20} />
+  </i>
+  <h5>{role === "vendor" ? "Vendor Information" : "Center Information"}</h5>
+</div>;

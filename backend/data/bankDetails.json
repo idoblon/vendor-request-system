@@ -19,5 +19,89 @@
     "branch": "",
     "accountNumber": "5678901234",
     "accountHolderName": "Test Account"
+  },
+  {
+    "id": "4",
+    "bankName": "Global IME Bank",
+    "branch": "",
+    "accountNumber": "",
+    "accountHolderName": ""
+  },
+  {
+    "id": "5",
+    "bankName": "Nabil Bank",
+    "branch": "",
+    "accountNumber": "",
+    "accountHolderName": ""
+  },
+  {
+    "id": "6",
+    "bankName": "Nepal Investment Mega Bank",
+    "branch": "",
+    "accountNumber": "",
+    "accountHolderName": ""
+  },
+  {
+    "id": "7",
+    "bankName": "Kumari Bank",
+    "branch": "",
+    "accountNumber": "",
+    "accountHolderName": ""
+  },
+  {
+    "id": "8",
+    "bankName": "Prabhu Bank",
+    "branch": "",
+    "accountNumber": "",
+    "accountHolderName": ""
+  },
+  {
+    "id": "9",
+    "bankName": "Everest Bank",
+    "branch": "",
+    "accountNumber": "",
+    "accountHolderName": ""
+  },
+  {
+    "id": "10",
+    "bankName": "Himalayan Bank",
+    "branch": "",
+    "accountNumber": "",
+    "accountHolderName": ""
+  },
+  {
+    "id": "11",
+    "bankName": "Standard Chartered Bank Nepal",
+    "branch": "",
+    "accountNumber": "",
+    "accountHolderName": ""
+  },
+  {
+    "id": "12",
+    "bankName": "Citizens Bank International",
+    "branch": "",
+    "accountNumber": "",
+    "accountHolderName": ""
+  },
+  {
+    "id": "13",
+    "bankName": "Sunrise Bank",
+    "branch": "",
+    "accountNumber": "",
+    "accountHolderName": ""
+  },
+  {
+    "id": "14",
+    "bankName": "Sanima Bank",
+    "branch": "",
+    "accountNumber": "",
+    "accountHolderName": ""
+  },
+  {
+    "id": "15",
+    "bankName": "Machhapuchhre Bank",
+    "branch": "",
+    "accountNumber": "",
+    "accountHolderName": ""
   }
 ]
